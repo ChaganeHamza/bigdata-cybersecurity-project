@@ -1,0 +1,51 @@
+services:
+  hadoop-master:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: hadoop-master
+    hostname: hadoop-master
+    environment:
+      - CLUSTER_NAME=test
+      - CORE_CONF_fs_defaultFS=hdfs://hadoop-master:9000
+      - HDFS_CONF_dfs_replication=1
+    ports:
+      - "9870:9870"
+      - "9000:9000"
+    volumes:
+      - hadoop-namenode:/hadoop/dfs/name
+    networks:
+      - hadoop-net
+
+  hadoop-worker:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: hadoop-worker
+    hostname: hadoop-worker
+    environment:
+      - CLUSTER_NAME=test
+      - CORE_CONF_fs_defaultFS=hdfs://hadoop-master:9000
+      - HDFS_CONF_dfs_replication=1
+    volumes:
+      - hadoop-datanode:/hadoop/dfs/data
+    networks:
+      - hadoop-net
+    depends_on:
+      - hadoop-master
+
+  hbase:
+    image: dajobe/hbase
+    container_name: hbase
+    hostname: hbase
+    ports:
+      - "16010:16010"
+      - "2181:2181"
+    environment:
+      - HBASE_MANAGES_ZK=true
+    networks:
+      - hadoop-net
+
+volumes:
+  hadoop-namenode:
+  hadoop-datanode:
+
+networks:
+  hadoop-net:
+    driver: bridge
