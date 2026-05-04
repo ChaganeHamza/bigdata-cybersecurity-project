@@ -1,3 +1,44 @@
+# Maven
 target/
-*.log
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# IntelliJ
+.idea/
+*.iml
+
+# VS Code
 .vscode/
+
+# MacOS
+.DS_Store
+
+# Logs
+*.log
+
+
+
+
+
+
+
+# raw dataset 
+data/raw/
+
+# python cache
+__pycache__/
+*.pyc
+
+# optional big files
+*.csv
+
+
+
+
+
+
+
+
