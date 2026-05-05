@@ -18,7 +18,7 @@ public class PortScanDetectionJob {
                 .getOrCreate();
 
         Dataset<Row> logs = spark.read()
-                .parquet("data/clean/clean_logs.parquet");
+                .parquet("hdfs://hadoop-master:9000/data/cybersecurity/clean_logs.parquet");
 
         Dataset<Row> portScans = logs
                 .filter(col("protocol").equalTo("TCP"))
