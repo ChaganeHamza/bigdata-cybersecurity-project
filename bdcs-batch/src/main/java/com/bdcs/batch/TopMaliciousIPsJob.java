@@ -18,7 +18,7 @@ public class TopMaliciousIPsJob {
                 .getOrCreate();
 
         Dataset<Row> logs = spark.read()
-                .parquet("data/clean/clean_logs.parquet");
+                .parquet("hdfs://hadoop-master:9000/data/cybersecurity/clean_logs.parquet");
 
         Dataset<Row> topMaliciousIPs = logs
                 .filter(
@@ -39,7 +39,7 @@ public class TopMaliciousIPsJob {
 
         topMaliciousIPs.write()
                 .mode("overwrite")
-                .parquet("data/output/top_malicious_ips");
+                .parquet("hdfs://hadoop-master:9000/data/cybersecurity/output/top_malicious_ips");
 
         spark.stop();
         System.exit(0);

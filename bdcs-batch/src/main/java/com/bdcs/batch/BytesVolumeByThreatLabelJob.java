@@ -18,7 +18,7 @@ public class BytesVolumeByThreatLabelJob {
                 .getOrCreate();
 
         Dataset<Row> logs = spark.read()
-                .parquet("data/clean/clean_logs.parquet");
+                .parquet("hdfs://hadoop-master:9000/data/cybersecurity/clean_logs.parquet");
 
         Dataset<Row> bytesByThreatLabel = logs
                 .groupBy(lower(col("threat_label")).alias("threat_label"))

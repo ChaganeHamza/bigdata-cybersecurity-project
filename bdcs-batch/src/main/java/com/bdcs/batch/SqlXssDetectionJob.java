@@ -22,7 +22,7 @@ public class SqlXssDetectionJob {
                 .getOrCreate();
 
         Dataset<Row> logs = spark.read()
-                .parquet("data/clean/clean_logs.parquet");
+                .parquet("hdfs://hadoop-master:9000/data/cybersecurity/clean_logs.parquet");
 
         Dataset<Row> sqli = logs
                 .filter(
