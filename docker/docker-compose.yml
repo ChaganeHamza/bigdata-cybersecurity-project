@@ -69,6 +69,20 @@ services:
     networks:
       - hadoop-net
 
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=yesoreyeram-infinity-datasource
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - hadoop-net
+=======
+
   spark:
     image: bde2020/spark-master:3.2.1-hadoop3.2
     container_name: spark
@@ -86,10 +100,11 @@ services:
       - hadoop-master
       - kafka
 
+
 volumes:
   hadoop-namenode:
   hadoop-datanode:
-
+  grafana-data:
 networks:
   hadoop-net:
     driver: bridge

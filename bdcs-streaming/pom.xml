@@ -46,14 +46,23 @@
     </dependencies>
 <build>
     <plugins>
-        <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>3.1.0</version>
-            <configuration>
-                <mainClass>com.bdcs.streaming.MainStreaming</mainClass>
-            </configuration>
-        </plugin>
-    </plugins>
+    <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+            <mainClass>com.bdcs.streaming.BruteForceDetectionJob</mainClass>
+            <jvmArgs>
+                <jvmArg>--add-exports=java.base/sun.nio.ch=ALL-UNNAMED</jvmArg>
+                <jvmArg>--add-opens=java.base/java.nio=ALL-UNNAMED</jvmArg>
+                <jvmArg>--add-opens=java.base/sun.nio.ch=ALL-UNNAMED</jvmArg>
+            </jvmArgs>
+        </configuration>
+    </plugin>
+</plugins>
+
+
+
+
 </build>
 </project>
