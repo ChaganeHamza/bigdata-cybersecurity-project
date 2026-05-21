@@ -18,31 +18,29 @@ public class KafkaLogProducer {
         props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 
         KafkaProducer<String, String> producer = new KafkaProducer<>(props);
-
         Random rand = new Random();
 
-        String[] threats = {"normal", "suspicious", "malicious"};
-        String[] endpoints = {"/login", "/admin", "/api", "/search"};
+        System.out.println("=== Starting Kafka Producer ===");
 
-        for (int i = 0; i < 30; i++) {
-
+        // Envoi de 10 tentatives de brute force (failed login)
+        for (int i = 0; i < 10; i++) {
             String log = "{"
-                    + "\"timestamp\":\"2026-05-04 20:" + rand.nextInt(60) + "\","
-                    + "\"source_ip\":\"192.168.1." + rand.nextInt(255) + "\","
-                    + "\"dest_ip\":\"10.0.0." + rand.nextInt(255) + "\","
-                    + "\"request\":\"" + endpoints[rand.nextInt(endpoints.length)] + "\","
-                    + "\"status\":200,"
-                    + "\"bytes\":" + rand.nextInt(5000) + ","
-                    + "\"threat_label\":\"" + threats[rand.nextInt(threats.length)] + "\""
+                    + "\"timestamp\":\"2026-05-19 20:" + String.format("%02d", rand.nextInt(60)) + "\","
+                    + "\"source_ip\":\"192.168.1.100\","
+                    + "\"dest_ip\":\"10.0.0.1\","
+                    + "\"request\":\"/login\","
+                    + "\"status\":401,"
+                    + "\"bytes\":500,"
+                    + "\"threat_label\":\"malicious\","
+                    + "\"message\":\"failed login attempt\""
                     + "}";
 
             producer.send(new ProducerRecord<>(topic, log));
-
             System.out.println("Sent: " + log);
-
-            Thread.sleep(500);
+            Thread.sleep(1000);
         }
 
         producer.close();
+        System.out.println("=== Producer finished ===");
     }
 }

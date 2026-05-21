@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>BDCS — Cybersecurity Threat Dashboard</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{--bg:#0b0f19;--surface:#111827;--card:#161d2e;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);--text:#e2e8f0;--muted:#6b7280;--accent:#3b82f6;--danger:#ef4444;--warning:#f59e0b;--success:#10b981;--purple:#8b5cf6;--teal:#14b8a6;--font:'JetBrains Mono','Fira Code',monospace;--sans:'Inter',system-ui,sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+.topbar-brand{display:flex;align-items:center;gap:10px;}
+.logo{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;}
+.topbar-brand h1{font-size:15px;font-weight:600;letter-spacing:.5px;}
+.topbar-brand span{font-size:11px;color:var(--muted);font-family:var(--font);}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.live-badge{display:flex;align-items:center;gap:6px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.25);color:var(--success);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:500;}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--success);animation:pulse 1.4s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.topbar-time{font-family:var(--font);font-size:12px;color:var(--muted);}
+.main{padding:20px 24px;max-width:1400px;margin:0 auto;}
+.search-row{display:flex;gap:10px;margin-bottom:20px;}
+.search-wrap{flex:1;position:relative;}
+.search-wrap i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:16px;}
+.search-wrap input{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:10px 12px 10px 38px;color:var(--text);font-size:13px;font-family:var(--font);outline:none;transition:border-color .2s;}
+.search-wrap input::placeholder{color:var(--muted);}
+.search-wrap input:focus{border-color:var(--accent);}
+.search-btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;font-weight:500;transition:opacity .2s;}
+.search-btn:hover{opacity:.85;}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px;}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;position:relative;overflow:hidden;}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.kpi.danger::before{background:var(--danger);}
+.kpi.warning::before{background:var(--warning);}
+.kpi.success::before{background:var(--success);}
+.kpi.info::before{background:var(--accent);}
+.kpi.purple::before{background:var(--purple);}
+.kpi-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;}
+.kpi-value{font-size:26px;font-weight:700;font-family:var(--font);line-height:1;}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:4px;}
+.kpi.danger .kpi-value{color:var(--danger);}
+.kpi.warning .kpi-value{color:var(--warning);}
+.kpi.success .kpi-value{color:var(--success);}
+.kpi.info .kpi-value{color:var(--accent);}
+.kpi.purple .kpi-value{color:var(--purple);}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.grid-3{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px;}
+@media(max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.card-title{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:7px;}
+.card-title i{color:var(--muted);font-size:16px;}
+.card-badge{font-size:11px;border-radius:20px;padding:2px 10px;font-weight:500;}
+.badge-danger{background:rgba(239,68,68,.15);color:var(--danger);border:1px solid rgba(239,68,68,.25);}
+.badge-warning{background:rgba(245,158,11,.15);color:var(--warning);border:1px solid rgba(245,158,11,.25);}
+.badge-success{background:rgba(16,185,129,.15);color:var(--success);border:1px solid rgba(16,185,129,.25);}
+.badge-info{background:rgba(59,130,246,.15);color:var(--accent);border:1px solid rgba(59,130,246,.25);}
+.badge-purple{background:rgba(139,92,246,.15);color:var(--purple);border:1px solid rgba(139,92,246,.25);}
+.badge-muted{background:rgba(255,255,255,.05);color:var(--muted);border:1px solid var(--border2);}
+.threat-table{width:100%;border-collapse:collapse;font-size:12px;}
+.threat-table th{text-align:left;color:var(--muted);font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:.8px;padding:0 8px 10px;border-bottom:1px solid var(--border);}
+.threat-table td{padding:9px 8px;border-bottom:1px solid var(--border);}
+.threat-table tr:last-child td{border:none;}
+.threat-table tr:hover td{background:rgba(255,255,255,.02);}
+.ip-cell{font-family:var(--font);font-size:12px;color:var(--accent);}
+.score-bar-wrap{display:flex;align-items:center;gap:8px;}
+.score-bar{height:5px;border-radius:3px;flex:1;background:rgba(255,255,255,.07);}
+.score-bar-fill{height:100%;border-radius:3px;}
+.score-num{font-family:var(--font);font-size:12px;min-width:28px;text-align:right;}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:10px;font-size:12px;color:var(--muted);}
+.legend span{display:flex;align-items:center;gap:5px;}
+.legend-dot{width:10px;height:10px;border-radius:2px;}
+#ip-result{margin-bottom:16px;}
+.ip-card{background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:16px 18px;}
+.ip-card-header{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+.ip-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.ip-icon.critical{background:rgba(239,68,68,.15);color:var(--danger);}
+.ip-icon.high{background:rgba(245,158,11,.15);color:var(--warning);}
+.ip-icon.medium{background:rgba(59,130,246,.15);color:var(--accent);}
+.ip-icon.low{background:rgba(16,185,129,.15);color:var(--success);}
+.ip-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+.ip-field{background:rgba(255,255,255,.03);border-radius:6px;padding:10px 12px;}
+.ip-field-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;}
+.ip-field-value{font-size:13px;font-family:var(--font);}
+.loading{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;padding:20px 0;}
+.spinner{width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.footer{text-align:center;color:var(--muted);font-size:11px;padding:24px;font-family:var(--font);border-top:1px solid var(--border);margin-top:20px;}
+.err-box{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:12px 16px;color:var(--danger);font-size:12px;font-family:var(--font);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="logo"><i class="ti ti-shield-lock"></i></div>
+    <div>
+      <h1>BDCS — Threat Dashboard</h1>
+      <span>Lambda Architecture · Batch + Speed Layer</span>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="live-badge"><div class="live-dot"></div> Live</div>
+    <div class="topbar-time" id="clock">--:--:--</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- IP SEARCH -->
+  <div class="search-row">
+    <div class="search-wrap">
+      <i class="ti ti-search"></i>
+      <input type="text" id="ip-input" placeholder="Search IP address… e.g. 229.140.23.152"/>
+    </div>
+    <button class="search-btn" onclick="searchIP()">
+      <i class="ti ti-radar"></i> Analyze IP
+    </button>
+  </div>
+  <div id="ip-result"></div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid" id="kpi-grid">
+    <div class="kpi danger"><div class="kpi-label">Top Malicious IPs</div><div class="kpi-value" id="k-ips">—</div><div class="kpi-sub">batch layer</div></div>
+    <div class="kpi warning"><div class="kpi-label">SQLi Detected</div><div class="kpi-value" id="k-sqli">—</div><div class="kpi-sub">request_path patterns</div></div>
+    <div class="kpi purple"><div class="kpi-label">XSS Detected</div><div class="kpi-value" id="k-xss">—</div><div class="kpi-sub">request_path patterns</div></div>
+    <div class="kpi info"><div class="kpi-label">Malicious Events</div><div class="kpi-value" id="k-mal">—</div><div class="kpi-sub">threat_label=malicious</div></div>
+    <div class="kpi success"><div class="kpi-label">Benign Events</div><div class="kpi-value" id="k-ben">—</div><div class="kpi-sub">threat_label=benign</div></div>
+  </div>
+
+  <!-- ROW 1: Bytes chart + SQLi/XSS donut -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="ti ti-database"></i>Bytes transferred by threat label</div>
+        <span class="card-badge badge-purple">BytesVolumeByThreatLabelJob</span>
+      </div>
+      <div class="legend">
+        <span><span class="legend-dot" style="background:#ef4444"></span>Malicious</span>
+        <span><span class="legend-dot" style="background:#f59e0b"></span>Suspicious</span>
+        <span><span class="legend-dot" style="background:#10b981"></span>Benign</span>
+      </div>
+      <div style="position:relative;height:220px;">
+        <canvas id="bytesChart" role="img" aria-label="Bytes transferred by threat label">Bytes by threat label.</canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="ti ti-bug"></i>SQLi vs XSS detections</div>
+        <span class="card-badge badge-danger">SqlXssDetectionJob</span>
+      </div>
+      <div style="position:relative;height:180px;">
+        <canvas id="sqliChart" role="img" aria-label="SQLi vs XSS detection counts">SQLi vs XSS.</canvas>
+      </div>
+      <div class="legend" style="margin-top:12px;justify-content:center;">
+        <span><span class="legend-dot" style="background:#8b5cf6"></span>SQLi</span>
+        <span><span class="legend-dot" style="background:#14b8a6"></span>XSS</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2: Top IPs table + event count chart -->
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="ti ti-flame"></i>Top 10 malicious IPs — Batch Layer</div>
+        <span class="card-badge badge-danger">TopMaliciousIPsJob</span>
+      </div>
+      <div id="table-loading" class="loading"><div class="spinner"></div>Loading from Parquet…</div>
+      <table class="threat-table" id="ip-table" style="display:none">
+        <thead>
+          <tr>
+            <th>IP Address</th>
+            <th>Malicious</th>
+            <th>Suspicious</th>
+            <th>Score</th>
+            <th>Level</th>
+            <th>Total Bytes</th>
+          </tr>
+        </thead>
+        <tbody id="ip-table-body"></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="ti ti-chart-bar"></i>Event count by label</div>
+      </div>
+      <div style="position:relative;height:280px;">
+        <canvas id="eventsChart" role="img" aria-label="Event count by threat label">Event counts.</canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 3: Avg bytes bar -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card-header">
+      <div class="card-title"><i class="ti ti-activity"></i>Average bytes per threat label</div>
+      <span class="card-badge badge-info">Spark Batch Analysis</span>
+    </div>
+    <div style="position:relative;height:160px;">
+      <canvas id="avgBytesChart" role="img" aria-label="Average bytes per threat label">Avg bytes.</canvas>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  BDCS · Lambda Architecture · Batch: HDFS → Spark → Parquet &nbsp;|&nbsp; Speed: Kafka → Spark Streaming → Console &nbsp;|&nbsp; Query: Flask REST API · <span id="last-refresh">—</span>
+</div>
+
+<script>
+const API = '';  // même origine Flask
+
+/* ── CLOCK ── */
+setInterval(() => { document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-GB'); }, 1000);
+
+/* ── HELPERS ── */
+function fmtNum(n) {
+  if (n >= 1e9) return (n/1e9).toFixed(1)+'B';
+  if (n >= 1e6) return (n/1e6).toFixed(1)+'M';
+  if (n >= 1e3) return (n/1e3).toFixed(1)+'K';
+  return String(n);
+}
+function scoreColor(s) {
+  if (s >= 85) return '#ef4444';
+  if (s >= 65) return '#f59e0b';
+  if (s >= 40) return '#3b82f6';
+  return '#10b981';
+}
+function levelBadge(lv) {
+  const m = {CRITICAL:'danger',HIGH:'warning',MEDIUM:'info',LOW:'success'};
+  return `<span class="card-badge badge-${m[lv]||'muted'}">${lv}</span>`;
+}
+
+/* ── CHARTS (init empty, fill after fetch) ── */
+let bytesChart, sqliChart, eventsChart, avgBytesChart;
+
+function initCharts() {
+  bytesChart = new Chart(document.getElementById('bytesChart').getContext('2d'), {
+    type:'bar',
+    data:{ labels:[], datasets:[
+      {label:'Total bytes',data:[],backgroundColor:['#ef4444','#f59e0b','#10b981'],borderRadius:4,borderWidth:0}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false},ticks:{color:'#6b7280',font:{size:11}}},
+              y:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'#6b7280',font:{size:11},callback:v=>fmtNum(v)}}}}
+  });
+
+  sqliChart = new Chart(document.getElementById('sqliChart').getContext('2d'), {
+    type:'doughnut',
+    data:{labels:['SQLi','XSS'],datasets:[{data:[0,0],backgroundColor:['#8b5cf6','#14b8a6'],borderWidth:0,hoverOffset:8}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false}}}
+  });
+
+  eventsChart = new Chart(document.getElementById('eventsChart').getContext('2d'), {
+    type:'bar',
+    data:{labels:[],datasets:[{label:'Events',data:[],backgroundColor:['#ef4444','#f59e0b','#10b981'],borderRadius:4,borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false},ticks:{color:'#6b7280',font:{size:11}}},
+              y:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'#6b7280',font:{size:11},callback:v=>fmtNum(v)}}}}
+  });
+
+  avgBytesChart = new Chart(document.getElementById('avgBytesChart').getContext('2d'), {
+    type:'bar',
+    data:{labels:[],datasets:[{label:'Avg bytes',data:[],backgroundColor:['#ef4444','#f59e0b','#10b981'],borderRadius:4,borderWidth:0}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'#6b7280',font:{size:11},callback:v=>fmtNum(v)}},
+              y:{grid:{display:false},ticks:{color:'#6b7280',font:{size:11}}}}}
+  });
+}
+
+/* ── LOAD DATA ── */
+async function loadAll() {
+  initCharts();
+  await Promise.all([loadTopIPs(), loadBytes(), loadSqliXss()]);
+  document.getElementById('last-refresh').textContent = 'Last refresh: ' + new Date().toLocaleTimeString('en-GB');
+}
+
+async function loadTopIPs() {
+  try {
+    const res  = await fetch(API + '/threats/top');
+    const data = await res.json();
+    const ips  = data.top_malicious_ips || [];
+
+    // KPI
+    document.getElementById('k-ips').textContent = ips.length;
+
+    // Table
+    document.getElementById('table-loading').style.display = 'none';
+    document.getElementById('ip-table').style.display = 'table';
+    document.getElementById('ip-table-body').innerHTML = ips.map(d => {
+      const col = scoreColor(d.score);
+      return `<tr>
+        <td class="ip-cell" style="cursor:pointer" onclick="fillSearch('${d.ip}')">${d.ip}</td>
+        <td style="color:var(--danger);font-family:var(--font)">${d.malicious_count.toLocaleString()}</td>
+        <td style="color:var(--warning);font-family:var(--font)">${d.suspicious_count.toLocaleString()}</td>
+        <td>
+          <div class="score-bar-wrap">
+            <div class="score-bar"><div class="score-bar-fill" style="width:${d.score}%;background:${col}"></div></div>
+            <span class="score-num" style="color:${col}">${d.score}</span>
+          </div>
+        </td>
+        <td>${levelBadge(d.threat_level)}</td>
+        <td style="color:var(--muted);font-family:var(--font)">${fmtNum(d.total_bytes)}</td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    document.getElementById('table-loading').innerHTML = `<div class="err-box"><i class="ti ti-alert-circle"></i> Erreur /threats/top : ${e.message}</div>`;
+  }
+}
+
+async function loadBytes() {
+  try {
+    const res  = await fetch(API + '/threats/bytes');
+    const data = await res.json();
+    const rows = data.bytes_by_threat_label || [];
+
+    // Ordre : malicious, suspicious, benign
+    const order = ['malicious','suspicious','benign'];
+    const sorted = order.map(l => rows.find(r => r.threat_label === l)).filter(Boolean);
+
+    const labels     = sorted.map(r => r.threat_label.charAt(0).toUpperCase() + r.threat_label.slice(1));
+    const totals     = sorted.map(r => r.total_bytes);
+    const eventCts   = sorted.map(r => r.event_count);
+    const avgBytes   = sorted.map(r => r.avg_bytes);
+    const colors     = ['#ef4444','#f59e0b','#10b981'];
+
+    // KPI malicious / benign
+    const mal = sorted.find(r => r.threat_label === 'malicious');
+    const ben = sorted.find(r => r.threat_label === 'benign');
+    if (mal) document.getElementById('k-mal').textContent = fmtNum(mal.event_count);
+    if (ben) document.getElementById('k-ben').textContent = fmtNum(ben.event_count);
+
+    // Bytes chart
+    bytesChart.data.labels = labels;
+    bytesChart.data.datasets[0].data = totals;
+    bytesChart.data.datasets[0].backgroundColor = colors;
+    bytesChart.update();
+
+    // Events chart
+    eventsChart.data.labels = labels;
+    eventsChart.data.datasets[0].data = eventCts;
+    eventsChart.data.datasets[0].backgroundColor = colors;
+    eventsChart.update();
+
+    // Avg bytes chart
+    avgBytesChart.data.labels = labels;
+    avgBytesChart.data.datasets[0].data = avgBytes;
+    avgBytesChart.data.datasets[0].backgroundColor = colors;
+    avgBytesChart.update();
+
+  } catch(e) { console.error('loadBytes:', e); }
+}
+
+async function loadSqliXss() {
+  try {
+    const res  = await fetch(API + '/threats/sqli-xss');
+    const data = await res.json();
+    const rows = data.sqli_xss_detections || [];
+
+    const sqli = rows.find(r => r.attack_type === 'SQLi');
+    const xss  = rows.find(r => r.attack_type === 'XSS');
+
+    document.getElementById('k-sqli').textContent = fmtNum(sqli?.count || 0);
+    document.getElementById('k-xss').textContent  = fmtNum(xss?.count  || 0);
+
+    sqliChart.data.datasets[0].data = [sqli?.count || 0, xss?.count || 0];
+    sqliChart.update();
+  } catch(e) { console.error('loadSqliXss:', e); }
+}
+
+/* ── IP SEARCH ── */
+function fillSearch(ip) {
+  document.getElementById('ip-input').value = ip;
+  searchIP();
+}
+
+async function searchIP() {
+  const ip = document.getElementById('ip-input').value.trim();
+  if (!ip) return;
+  const result = document.getElementById('ip-result');
+  result.innerHTML = '<div class="loading"><div class="spinner"></div>Analyzing IP…</div>';
+  try {
+    const res  = await fetch(API + '/threats/ip/' + encodeURIComponent(ip));
+    const d    = await res.json();
+
+    if (res.status === 404) {
+      result.innerHTML = `<div class="ip-card" style="border-color:rgba(16,185,129,.3);margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:10px;color:var(--success)">
+          <i class="ti ti-shield-check" style="font-size:24px"></i>
+          <div>
+            <div style="font-weight:600;font-size:14px;font-family:var(--font)">${ip}</div>
+            <div style="font-size:12px;color:var(--muted)">${d.message}</div>
+          </div>
+        </div>
+      </div>`;
+      return;
+    }
+
+    const bl    = d.batch_layer || {};
+    const score = bl.reputation_score || 0;
+    const lv    = d.threat_level || 'LOW';
+    const lvCls = lv === 'CRITICAL' ? 'critical' : lv === 'HIGH' ? 'high' : lv === 'MEDIUM' ? 'medium' : 'low';
+    const col   = scoreColor(score);
+
+    result.innerHTML = `
+    <div class="ip-card" style="border-color:${col}44;margin-bottom:16px">
+      <div class="ip-card-header">
+        <div class="ip-icon ${lvCls}"><i class="ti ti-shield-exclamation"></i></div>
+        <div style="flex:1">
+          <div style="font-family:var(--font);font-size:15px;font-weight:700">${ip}</div>
+          <div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap">
+            ${levelBadge(lv)}
+            <span class="card-badge badge-muted">${d.action}</span>
+          </div>
+        </div>
+        <div style="font-size:28px;font-weight:700;font-family:var(--font);color:${col}">${score}</div>
+      </div>
+      <div class="ip-grid">
+        <div class="ip-field">
+          <div class="ip-field-label">Threat count</div>
+          <div class="ip-field-value">${(bl.threat_count||0).toLocaleString()}</div>
+        </div>
+        <div class="ip-field">
+          <div class="ip-field-label">Malicious events</div>
+          <div class="ip-field-value" style="color:var(--danger)">${(bl.malicious_count||0).toLocaleString()}</div>
+        </div>
+        <div class="ip-field">
+          <div class="ip-field-label">Suspicious events</div>
+          <div class="ip-field-value" style="color:var(--warning)">${(bl.suspicious_count||0).toLocaleString()}</div>
+        </div>
+        <div class="ip-field">
+          <div class="ip-field-label">Total bytes</div>
+          <div class="ip-field-value">${fmtNum(bl.total_bytes||0)}</div>
+        </div>
+      </div>
+    </div>`;
+  } catch(e) {
+    result.innerHTML = `<div class="err-box" style="margin-bottom:16px"><i class="ti ti-alert-circle"></i> Erreur : ${e.message}</div>`;
+  }
+}
+
+document.getElementById('ip-input').addEventListener('keydown', e => { if(e.key==='Enter') searchIP(); });
+
+/* ── START ── */
+loadAll();
+</script>
+</body>
+</html>
