@@ -1,0 +1,2 @@
+{"source_ip": "45.142.212.100", "window_start": "2026-05-22 12:09:30", "window_end": "2026-05-22 12:10:30", "count": 3, "target_ip": "", "protocol": "HTTP", "alert_type": "XSS", "severity": "CRITICAL", "threat_score": 90}
+{"source_ip": "45.142.212.100", "window_start": "2026-05-22 12:10:00", "window_end": "2026-05-22 12:11:00", "count": 3, "target_ip": "", "protocol": "HTTP", "alert_type": "XSS", "severity": "CRITICAL", "threat_score": 90}

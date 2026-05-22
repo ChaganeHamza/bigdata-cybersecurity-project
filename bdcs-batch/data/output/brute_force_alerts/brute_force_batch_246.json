@@ -1,0 +1,2 @@
+{"source_ip": "45.142.212.100", "window_start": "2026-05-22 12:23:00", "window_end": "2026-05-22 12:24:00", "count": 12, "target_ip": "192.168.10.186", "protocol": "SSH", "alert_type": "BRUTE_FORCE", "severity": "HIGH", "threat_score": 120}
+{"source_ip": "45.142.212.100", "window_start": "2026-05-22 12:22:30", "window_end": "2026-05-22 12:23:30", "count": 12, "target_ip": "192.168.10.186", "protocol": "SSH", "alert_type": "BRUTE_FORCE", "severity": "HIGH", "threat_score": 120}

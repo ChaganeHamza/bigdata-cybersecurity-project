@@ -281,7 +281,56 @@ def threat_stats():
         "timestamp": datetime.utcnow().isoformat(),
     })
 
+# ─────────────────────────────────────────────
+# ADD THIS ROUTE TO YOUR api/app.py
+# Paste it anywhere before the  if __name__ == "__main__":  line
+# ─────────────────────────────────────────────
 
+@app.route("/threats/kpis")
+def threat_kpis():
+    """
+    Single flat object with all scalar KPIs needed by Grafana stat/gauge panels.
+    Grafana Infinity datasource reads one field per panel — no filtering needed.
+    """
+    sqli_rows,  e1 = read_parquet("sqli_xss_detection")
+    bytes_rows, e2 = read_parquet("bytes_volume_by_threat_label")
+    top_rows,   e3 = read_parquet("top_malicious_ips")
+
+    # SQLi / XSS counts
+    sqli_count = 0
+    xss_count  = 0
+    if sqli_rows:
+        for r in sqli_rows:
+            if r.get("attack_type") == "SQLi":
+                sqli_count = int(r.get("count", 0))
+            elif r.get("attack_type") == "XSS":
+                xss_count = int(r.get("count", 0))
+
+    # Event counts by threat label
+    malicious_events  = 0
+    suspicious_events = 0
+    benign_events     = 0
+    if bytes_rows:
+        for r in bytes_rows:
+            lbl = r.get("threat_label", "")
+            cnt = int(r.get("event_count", 0))
+            if lbl == "malicious":
+                malicious_events = cnt
+            elif lbl == "suspicious":
+                suspicious_events = cnt
+            elif lbl == "benign":
+                benign_events = cnt
+
+    return jsonify({
+        "api_status":        "ok",
+        "sqli_count":        sqli_count,
+        "xss_count":         xss_count,
+        "malicious_events":  malicious_events,
+        "suspicious_events": suspicious_events,
+        "benign_events":     benign_events,
+        "top_ip_count":      len(top_rows) if top_rows else 0,
+        "errors": [e for e in [e1, e2, e3] if e],
+    })
 # ─────────────────────────────────────────────
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)

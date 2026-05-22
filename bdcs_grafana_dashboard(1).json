@@ -1,0 +1,685 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_BDCS_FLASK",
+      "label": "BDCS-Flask",
+      "description": "Flask REST API — Infinity datasource",
+      "type": "datasource",
+      "pluginId": "yesoreyeram-infinity-datasource",
+      "pluginName": "Infinity"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "datasource",
+      "id": "yesoreyeram-infinity-datasource",
+      "name": "Infinity",
+      "version": "2.0.0"
+    },
+    { "type": "grafana", "id": "grafana", "name": "Grafana", "version": "10.0.0" },
+    { "type": "panel", "id": "stat",       "name": "Stat",       "version": "" },
+    { "type": "panel", "id": "table",      "name": "Table",      "version": "" },
+    { "type": "panel", "id": "barchart",   "name": "Bar chart",  "version": "" },
+    { "type": "panel", "id": "piechart",   "name": "Pie chart",  "version": "" },
+    { "type": "panel", "id": "gauge",      "name": "Gauge",      "version": "" },
+    { "type": "panel", "id": "text",       "name": "Text",       "version": "" }
+  ],
+  "annotations": { "list": [] },
+  "description": "BDCS – Lambda Architecture Cybersecurity Threat Dashboard",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+
+    {
+      "type": "text",
+      "id": 1,
+      "title": "",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 2 },
+      "options": {
+        "mode": "html",
+        "content": "<div style=\"display:flex;align-items:center;gap:14px;padding:4px 0\"><span style=\"font-size:28px\">🛡️</span><div><h2 style=\"margin:0;font-size:20px;font-weight:700\">BDCS — Cybersecurity Threat Dashboard</h2><p style=\"margin:0;font-size:12px;color:#aaa\">Lambda Architecture · Batch Layer (Spark/HDFS/Parquet) + Speed Layer (Kafka/Spark Streaming)</p></div></div>"
+      },
+      "transparent": true
+    },
+
+    {
+      "type": "stat",
+      "id": 10,
+      "title": "🔴 Top Malicious IPs",
+      "description": "Number of distinct IPs flagged as malicious (TopMaliciousIPsJob)",
+      "gridPos": { "x": 0, "y": 2, "w": 4, "h": 4 },
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BDCS_FLASK}" },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/threats/top",
+          "url_options": { "method": "GET" },
+          "root_selector": "top_malicious_ips",
+          "columns": [{ "selector": "ip", "text": "IP", "type": "string" }],
+          "summarize": { "enabled": true, "expression": "count(ip)", "alias": "count" }
+        }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none", "textMode": "auto" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "red" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }] }
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "id": 11,
+      "title": "⚠️ SQLi Detections",
+      "description": "Total SQLi patterns found in request_path (SqlXssDetectionJob)",
+      "gridPos": { "x": 4, "y": 2, "w": 4, "h": 4 },
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BDCS_FLASK}" },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/threats/sqli-xss",
+          "url_options": { "method": "GET" },
+          "root_selector": "sqli_xss_detections",
+          "columns": [
+            { "selector": "attack_type", "text": "attack_type", "type": "string" },
+            { "selector": "count", "text": "count", "type": "number" }
+          ],
+          "filters": [{ "field": "attack_type", "operator": "equals", "value": "SQLi" }]
+        }
+      ],
+      "options": { "reduceOptions": { "calcs": ["sum"], "fields": "count" }, "colorMode": "background", "graphMode": "none" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "orange" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "orange", "value": null }] }
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "id": 12,
+      "title": "🟣 XSS Detections",
+      "description": "Total XSS patterns found in request_path (SqlXssDetectionJob)",
+      "gridPos": { "x": 8, "y": 2, "w": 4, "h": 4 },
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BDCS_FLASK}" },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/threats/sqli-xss",
+          "url_options": { "method": "GET" },
+          "root_selector": "sqli_xss_detections",
+          "columns": [
+            { "selector": "attack_type", "text": "attack_type", "type": "string" },
+            { "selector": "count", "text": "count", "type": "number" }
+          ],
+          "filters": [{ "field": "attack_type", "operator": "equals", "value": "XSS" }]
+        }
+      ],
+      "options": { "reduceOptions": { "calcs": ["sum"], "fields": "count" }, "colorMode": "background", "graphMode": "none" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "purple" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "purple", "value": null }] }
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "id": 13,
+      "title": "🔴 Malicious Events",
+      "description": "Total events labelled malicious (BytesVolumeByThreatLabelJob)",
+      "gridPos": { "x": 12, "y": 2, "w": 4, "h": 4 },
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BDCS_FLASK}" },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/threats/bytes",
+          "url_options": { "method": "GET" },
+          "root_selector": "bytes_by_threat_label",
+          "columns": [
+            { "selector": "threat_label", "text": "threat_label", "type": "string" },
+            { "selector": "event_count", "text": "event_count", "type": "number" }
+          ],
+          "filters": [{ "field": "threat_label", "operator": "equals", "value": "malicious" }]
+        }
+      ],
+      "options": { "reduceOptions": { "calcs": ["sum"], "fields": "event_count" }, "colorMode": "background", "graphMode": "none" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "dark-red" },
+          "unit": "short",
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "dark-red", "value": null }] }
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "id": 14,
+      "title": "🟡 Suspicious Events",
+      "description": "Total events labelled suspicious",
+      "gridPos": { "x": 16, "y": 2, "w": 4, "h": 4 },
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BDCS_FLASK}" },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/threats/bytes",
+          "url_options": { "method": "GET" },
+          "root_selector": "bytes_by_threat_label",
+          "columns": [
+            { "selector": "threat_label", "text": "threat_label", "type": "string" },
+            { "selector": "event_count", "text": "event_count", "type": "number" }
+          ],
+          "filters": [{ "field": "threat_label", "operator": "equals", "value": "suspicious" }]
+        }
+      ],
+      "options": { "reduceOptions": { "calcs": ["sum"], "fields": "event_count" }, "colorMode": "background", "graphMode": "none" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "yellow" },
+          "unit": "short",
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "yellow", "value": null }] }
+        }
+      }
+    },
+    {
+      "type": "stat",
+      "id": 15,
+      "title": "🟢 Benign Events",
+      "description": "Total events labelled benign",
+      "gridPos": { "x": 20, "y": 2, "w": 4, "h": 4 },
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BDCS_FLASK}" },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/threats/bytes",
+          "url_options": { "method": "GET" },
+          "root_selector": "bytes_by_threat_label",
+          "columns": [
+            { "selector": "threat_label", "text": "threat_label", "type": "string" },
+            { "selector": "event_count", "text": "event_count", "type": "number" }
+          ],
+          "filters": [{ "field": "threat_label", "operator": "equals", "value": "benign" }]
+        }
+      ],
+      "options": { "reduceOptions": { "calcs": ["sum"], "fields": "event_count" }, "colorMode": "background", "graphMode": "none" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "green" },
+          "unit": "short",
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        }
+      }
+    },
+
+    {
+      "type": "table",
+      "id": 20,
+      "title": "🔥 Top Malicious IPs — Batch Layer (TopMaliciousIPsJob)",
+      "description": "Sourced from Parquet output of Spark batch job",
+      "gridPos": { "x": 0, "y": 6, "w": 14, "h": 10 },
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BDCS_FLASK}" },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/threats/top",
+          "url_options": { "method": "GET" },
+          "root_selector": "top_malicious_ips",
+          "columns": [
+            { "selector": "ip",               "text": "IP Address",      "type": "string" },
+            { "selector": "threat_count",     "text": "Threat Events",   "type": "number" },
+            { "selector": "malicious_count",  "text": "Malicious",       "type": "number" },
+            { "selector": "suspicious_count", "text": "Suspicious",      "type": "number" },
+            { "selector": "total_bytes",      "text": "Total Bytes",     "type": "number" },
+            { "selector": "score",            "text": "Rep. Score",      "type": "number" },
+            { "selector": "threat_level",     "text": "Threat Level",    "type": "string" }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "custom": { "align": "auto" } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Rep. Score" },
+            "properties": [
+              { "id": "custom.displayMode", "value": "color-background" },
+              { "id": "thresholds", "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    { "color": "green",  "value": null },
+                    { "color": "yellow", "value": 40 },
+                    { "color": "orange", "value": 65 },
+                    { "color": "red",    "value": 85 }
+                  ]
+              }},
+              { "id": "color", "value": { "mode": "thresholds" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Threat Level" },
+            "properties": [
+              { "id": "custom.displayMode", "value": "color-text" },
+              { "id": "mappings", "value": [
+                { "type": "value", "options": { "CRITICAL": { "color": "red",    "index": 0 } } },
+                { "type": "value", "options": { "HIGH":     { "color": "orange", "index": 1 } } },
+                { "type": "value", "options": { "MEDIUM":   { "color": "yellow", "index": 2 } } },
+                { "type": "value", "options": { "LOW":      { "color": "green",  "index": 3 } } }
+              ]}
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Total Bytes" },
+            "properties": [{ "id": "unit", "value": "bytes" }]
+          }
+        ]
+      },
+      "options": {
+        "sortBy": [{ "displayName": "Rep. Score", "desc": true }],
+        "footer": { "show": false }
+      }
+    },
+
+    {
+      "type": "piechart",
+      "id": 21,
+      "title": "🐛 SQLi vs XSS Detections (SqlXssDetectionJob)",
+      "gridPos": { "x": 14, "y": 6, "w": 10, "h": 10 },
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BDCS_FLASK}" },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/threats/sqli-xss",
+          "url_options": { "method": "GET" },
+          "root_selector": "sqli_xss_detections",
+          "columns": [
+            { "selector": "attack_type", "text": "Attack Type", "type": "string" },
+            { "selector": "count",       "text": "Count",       "type": "number" }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "short"
+        }
+      },
+      "options": {
+        "displayLabels": ["name", "value"],
+        "legend": { "displayMode": "table", "placement": "bottom", "values": ["value", "percent"] },
+        "pieType": "donut",
+        "tooltip": { "mode": "single" }
+      }
+    },
+
+    {
+      "type": "barchart",
+      "id": 30,
+      "title": "📦 Total Bytes Transferred by Threat Label (BytesVolumeByThreatLabelJob)",
+      "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 },
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BDCS_FLASK}" },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/threats/bytes",
+          "url_options": { "method": "GET" },
+          "root_selector": "bytes_by_threat_label",
+          "columns": [
+            { "selector": "threat_label", "text": "Threat Label", "type": "string" },
+            { "selector": "total_bytes",  "text": "Total Bytes",  "type": "number" }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": { "mode": "palette-classic" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] }
+        }
+      },
+      "options": {
+        "xField": "Threat Label",
+        "orientation": "auto",
+        "groupWidth": 0.7,
+        "barRadius": 0.1,
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+
+    {
+      "type": "barchart",
+      "id": 31,
+      "title": "📊 Average Bytes per Event by Threat Label",
+      "gridPos": { "x": 12, "y": 16, "w": 12, "h": 8 },
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BDCS_FLASK}" },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/threats/bytes",
+          "url_options": { "method": "GET" },
+          "root_selector": "bytes_by_threat_label",
+          "columns": [
+            { "selector": "threat_label", "text": "Threat Label", "type": "string" },
+            { "selector": "avg_bytes",    "text": "Avg Bytes",    "type": "number" }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "options": {
+        "xField": "Threat Label",
+        "orientation": "horizontal",
+        "groupWidth": 0.7,
+        "barRadius": 0.1,
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      }
+    },
+
+    {
+      "type": "table",
+      "id": 40,
+      "title": "🔍 Port Scan Detections — Batch Layer (PortScanDetectionJob)",
+      "description": "IPs that hit >20 distinct target ports within a 5-minute window",
+      "gridPos": { "x": 0, "y": 24, "w": 24, "h": 8 },
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BDCS_FLASK}" },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/threats/port-scans",
+          "url_options": { "method": "GET" },
+          "root_selector": "port_scans",
+          "columns": [
+            { "selector": "ip",               "text": "Source IP",        "type": "string" },
+            { "selector": "window_start",     "text": "Window Start",     "type": "string" },
+            { "selector": "window_end",       "text": "Window End",       "type": "string" },
+            { "selector": "distinct_targets", "text": "Distinct Targets", "type": "number" },
+            { "selector": "connection_count", "text": "Connection Count", "type": "number" }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "custom": { "align": "auto" } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Distinct Targets" },
+            "properties": [
+              { "id": "custom.displayMode", "value": "color-background" },
+              { "id": "thresholds", "value": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "yellow", "value": null },
+                  { "color": "orange", "value": 50 },
+                  { "color": "red",    "value": 100 }
+                ]
+              }},
+              { "id": "color", "value": { "mode": "thresholds" } }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "sortBy": [{ "displayName": "Distinct Targets", "desc": true }]
+      }
+    },
+
+    {
+      "type": "gauge",
+      "id": 50,
+      "title": "🎯 Event Count — Malicious",
+      "gridPos": { "x": 0, "y": 32, "w": 8, "h": 6 },
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BDCS_FLASK}" },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/threats/bytes",
+          "url_options": { "method": "GET" },
+          "root_selector": "bytes_by_threat_label",
+          "columns": [
+            { "selector": "threat_label", "text": "threat_label", "type": "string" },
+            { "selector": "event_count",  "text": "event_count",  "type": "number" }
+          ],
+          "filters": [{ "field": "threat_label", "operator": "equals", "value": "malicious" }]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green",  "value": null },
+              { "color": "yellow", "value": 1000 },
+              { "color": "red",    "value": 5000 }
+            ]
+          }
+        }
+      },
+      "options": { "reduceOptions": { "calcs": ["sum"], "fields": "event_count" }, "showThresholdLabels": true, "showThresholdMarkers": true }
+    },
+    {
+      "type": "gauge",
+      "id": 51,
+      "title": "🎯 Event Count — Suspicious",
+      "gridPos": { "x": 8, "y": 32, "w": 8, "h": 6 },
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BDCS_FLASK}" },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/threats/bytes",
+          "url_options": { "method": "GET" },
+          "root_selector": "bytes_by_threat_label",
+          "columns": [
+            { "selector": "threat_label", "text": "threat_label", "type": "string" },
+            { "selector": "event_count",  "text": "event_count",  "type": "number" }
+          ],
+          "filters": [{ "field": "threat_label", "operator": "equals", "value": "suspicious" }]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green",  "value": null },
+              { "color": "yellow", "value": 500 },
+              { "color": "orange", "value": 2000 }
+            ]
+          }
+        }
+      },
+      "options": { "reduceOptions": { "calcs": ["sum"], "fields": "event_count" }, "showThresholdLabels": true, "showThresholdMarkers": true }
+    },
+    {
+      "type": "gauge",
+      "id": 52,
+      "title": "🎯 Event Count — Benign",
+      "gridPos": { "x": 16, "y": 32, "w": 8, "h": 6 },
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BDCS_FLASK}" },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/threats/bytes",
+          "url_options": { "method": "GET" },
+          "root_selector": "bytes_by_threat_label",
+          "columns": [
+            { "selector": "threat_label", "text": "threat_label", "type": "string" },
+            { "selector": "event_count",  "text": "event_count",  "type": "number" }
+          ],
+          "filters": [{ "field": "threat_label", "operator": "equals", "value": "benign" }]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "color": "green", "value": null }]
+          }
+        }
+      },
+      "options": { "reduceOptions": { "calcs": ["sum"], "fields": "event_count" }, "showThresholdLabels": true, "showThresholdMarkers": true }
+    },
+
+    {
+      "type": "table",
+      "id": 60,
+      "title": "📈 Bytes Statistics by Threat Label (min / avg / max)",
+      "gridPos": { "x": 0, "y": 38, "w": 24, "h": 6 },
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BDCS_FLASK}" },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/threats/bytes",
+          "url_options": { "method": "GET" },
+          "root_selector": "bytes_by_threat_label",
+          "columns": [
+            { "selector": "threat_label", "text": "Threat Label", "type": "string" },
+            { "selector": "event_count",  "text": "Events",       "type": "number" },
+            { "selector": "min_bytes",    "text": "Min Bytes",    "type": "number" },
+            { "selector": "avg_bytes",    "text": "Avg Bytes",    "type": "number" },
+            { "selector": "max_bytes",    "text": "Max Bytes",    "type": "number" },
+            { "selector": "total_bytes",  "text": "Total Bytes",  "type": "number" }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "bytes" },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "Events" },
+            "properties": [{ "id": "unit", "value": "short" }] },
+          { "matcher": { "id": "byName", "options": "Threat Label" },
+            "properties": [{ "id": "unit", "value": "string" }] }
+        ]
+      }
+    },
+
+    {
+      "type": "stat",
+      "id": 70,
+      "title": "🟢 API Health",
+      "description": "Flask API /health endpoint",
+      "gridPos": { "x": 0, "y": 44, "w": 6, "h": 4 },
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BDCS_FLASK}" },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/health",
+          "url_options": { "method": "GET" },
+          "root_selector": "",
+          "columns": [
+            { "selector": "status", "text": "Status", "type": "string" }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "ok": { "text": "✅ ONLINE", "color": "green", "index": 0 } } }
+          ],
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        }
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "stat",
+      "id": 71,
+      "title": "📁 Parquet Files Available",
+      "description": "Count of Parquet datasets loaded successfully",
+      "gridPos": { "x": 6, "y": 44, "w": 6, "h": 4 },
+      "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${DS_BDCS_FLASK}" },
+      "targets": [
+        {
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "url": "/threats/stats",
+          "url_options": { "method": "GET" },
+          "root_selector": "summary",
+          "columns": [
+            { "selector": "unique_malicious_ips",   "text": "Malicious IPs",    "type": "number" },
+            { "selector": "threat_label_groups",    "text": "Label Groups",     "type": "number" },
+            { "selector": "attack_types_detected",  "text": "Attack Types",     "type": "number" }
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "fixed", "fixedColor": "blue" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] }
+        }
+      },
+      "options": { "colorMode": "background", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } }
+    },
+    {
+      "type": "text",
+      "id": 72,
+      "title": "ℹ️ Architecture Info",
+      "gridPos": { "x": 12, "y": 44, "w": 12, "h": 4 },
+      "options": {
+        "mode": "html",
+        "content": "<table style=\"width:100%;font-size:12px;border-collapse:collapse\"><tr style=\"background:rgba(255,255,255,0.05)\"><th style=\"padding:6px 10px;text-align:left\">Layer</th><th style=\"padding:6px 10px;text-align:left\">Technology</th><th style=\"padding:6px 10px;text-align:left\">Job / Component</th></tr><tr><td style=\"padding:5px 10px\">🗄️ Batch Storage</td><td>HDFS</td><td>Partitioned log files</td></tr><tr style=\"background:rgba(255,255,255,0.03)\"><td style=\"padding:5px 10px\">⚙️ Batch Processing</td><td>Apache Spark</td><td>TopMaliciousIPsJob · PortScanDetectionJob · SqlXssDetectionJob · BytesVolumeByThreatLabelJob</td></tr><tr><td style=\"padding:5px 10px\">⚡ Speed Layer</td><td>Kafka + Spark Streaming</td><td>BruteForceDetectionJob</td></tr><tr style=\"background:rgba(255,255,255,0.03)\"><td style=\"padding:5px 10px\">🌐 Serving Layer</td><td>Flask REST API</td><td>http://192.168.10.186:5000</td></tr></table>"
+      },
+      "transparent": false
+    }
+
+  ],
+
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "tags": ["cybersecurity", "lambda", "bdcs", "batch", "streaming"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "BDCS — Cybersecurity Threat Dashboard",
+  "uid": "bdcs-lambda-001",
+  "version": 1,
+  "weekStart": ""
+}

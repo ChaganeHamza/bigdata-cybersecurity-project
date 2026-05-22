@@ -1,0 +1,2 @@
+{"source_ip": "185.220.101.45", "window_start": "2026-05-22 12:17:30", "window_end": "2026-05-22 12:18:30", "count": 6, "target_ip": "", "protocol": "HTTP", "alert_type": "SQLi", "severity": "CRITICAL", "threat_score": 90}
+{"source_ip": "185.220.101.45", "window_start": "2026-05-22 12:18:00", "window_end": "2026-05-22 12:19:00", "count": 3, "target_ip": "", "protocol": "HTTP", "alert_type": "SQLi", "severity": "CRITICAL", "threat_score": 90}
